@@ -1,3 +1,4 @@
+
 #cifar_mlp
 from keras.models import Sequential
 from keras.layers import Dense, Flatten
@@ -207,4 +208,89 @@ plt.ylabel("Accuracy")
 plt.legend()
 plt.grid(True)
 plt.show()
+
+
+
+
+# 🎯 Module 5 — Overfitting & Regularization (Simplified)
+# Praise Jesus! 🙌
+
+from keras.models import Sequential
+from keras.layers import Dense, Flatten, Dropout
+from keras.datasets import cifar10
+from keras.utils import to_categorical
+from keras import regularizers
+from keras.optimizers import Adam
+import matplotlib.pyplot as plt
+
+# Load and preprocess CIFAR-10
+(x_train, y_train), (x_test, y_test) = cifar10.load_data()
+x_train, x_test = x_train / 255.0, x_test / 255.0
+y_train, y_test = to_categorical(y_train), to_categorical(y_test)
+
+# -------------------------------
+# 🔹 Baseline Model (no regularization)
+# -------------------------------
+baseline = Sequential([
+    Flatten(input_shape=(32, 32, 3)),
+    Dense(512, activation='relu'),
+    Dense(256, activation='relu'),
+    Dense(10, activation='softmax')
+])
+
+baseline.compile(optimizer=Adam(0.001),
+                 loss='categorical_crossentropy',
+                 metrics=['accuracy'])
+
+history_base = baseline.fit(x_train, y_train, epochs=15, batch_size=128,
+                            validation_data=(x_test, y_test), verbose=1)
+
+# -------------------------------
+# 🔹 Regularized Model (Dropout + L2)
+# -------------------------------
+regularized = Sequential([
+    Flatten(input_shape=(32, 32, 3)),
+    Dense(512, activation='relu', kernel_regularizer=regularizers.l2(1e-4)),
+    Dropout(0.4),
+    Dense(256, activation='relu', kernel_regularizer=regularizers.l2(1e-4)),
+    Dropout(0.4),
+    Dense(10, activation='softmax')
+])
+
+regularized.compile(optimizer=Adam(0.001),
+                    loss='categorical_crossentropy',
+                    metrics=['accuracy'])
+
+history_reg = regularized.fit(x_train, y_train, epochs=15, batch_size=128,
+                              validation_data=(x_test, y_test), verbose=1)
+
+# -------------------------------
+# 📊 Compare Validation Curves
+# -------------------------------
+plt.figure(figsize=(10,4))
+
+# Validation loss
+plt.subplot(1,2,1)
+plt.plot(history_base.history['val_loss'], label='Baseline')
+plt.plot(history_reg.history['val_loss'], label='Regularized')
+plt.title("Validation Loss")
+plt.xlabel("Epoch"); plt.ylabel("Loss"); plt.legend(); plt.grid(True)
+
+# Validation accuracy
+plt.subplot(1,2,2)
+plt.plot(history_base.history['val_accuracy'], label='Baseline')
+plt.plot(history_reg.history['val_accuracy'], label='Regularized')
+plt.title("Validation Accuracy")
+plt.xlabel("Epoch"); plt.ylabel("Accuracy"); plt.legend(); plt.grid(True)
+
+plt.tight_layout()
+plt.show()
+
+# -------------------------------
+# 🧠 Evaluation Summary
+# -------------------------------
+loss_base, acc_base = baseline.evaluate(x_test, y_test, verbose=0)
+loss_reg, acc_reg = regularized.evaluate(x_test, y_test, verbose=0)
+print(f"Baseline → val_acc: {acc_base:.4f}, val_loss: {loss_base:.4f}")
+print(f"Regularized → val_acc: {acc_reg:.4f}, val_loss: {loss_reg:.4f}")
 
