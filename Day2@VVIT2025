@@ -125,3 +125,86 @@ plt.ylabel("Validation Accuracy")
 plt.legend()
 plt.grid(True)
 plt.show()
+
+
+
+# 🎯 Module 4 — Optimizer Comparison Lab (Simplified)
+# Praise Jesus! 🙌
+
+from keras.models import Sequential
+from keras.layers import Dense, Flatten
+from keras.datasets import cifar10
+from keras.utils import to_categorical
+from keras.optimizers import SGD, Adam, RMSprop
+import matplotlib.pyplot as plt
+
+# Load CIFAR-10 dataset
+(x_train, y_train), (x_test, y_test) = cifar10.load_data()
+x_train, x_test = x_train / 255.0, x_test / 255.0
+y_train, y_test = to_categorical(y_train), to_categorical(y_test)
+
+# Common model architecture
+def make_model():
+    model = Sequential([
+        Flatten(input_shape=(32, 32, 3)),
+        Dense(512, activation='relu'),
+        Dense(256, activation='relu'),
+        Dense(10, activation='softmax')
+    ])
+    return model
+
+# -------------------------------
+# 🔹 Model 1: SGD Optimizer
+# -------------------------------
+model_sgd = make_model()
+model_sgd.compile(optimizer=SGD(learning_rate=0.01),
+                  loss='categorical_crossentropy', metrics=['accuracy'])
+history_sgd = model_sgd.fit(x_train, y_train, epochs=10, batch_size=128,
+                            validation_data=(x_test, y_test), verbose=1)
+
+# -------------------------------
+# 🔹 Model 2: Adam Optimizer
+# -------------------------------
+model_adam = make_model()
+model_adam.compile(optimizer=Adam(learning_rate=0.001),
+                   loss='categorical_crossentropy', metrics=['accuracy'])
+history_adam = model_adam.fit(x_train, y_train, epochs=10, batch_size=128,
+                              validation_data=(x_test, y_test), verbose=1)
+
+# -------------------------------
+# 🔹 Model 3: RMSprop Optimizer
+# -------------------------------
+model_rms = make_model()
+model_rms.compile(optimizer=RMSprop(learning_rate=0.001),
+                  loss='categorical_crossentropy', metrics=['accuracy'])
+history_rms = model_rms.fit(x_train, y_train, epochs=10, batch_size=128,
+                            validation_data=(x_test, y_test), verbose=1)
+
+# -------------------------------
+# 📊 Compare Training Loss
+# -------------------------------
+plt.figure(figsize=(8,5))
+plt.plot(history_sgd.history['loss'], label='SGD')
+plt.plot(history_adam.history['loss'], label='Adam')
+plt.plot(history_rms.history['loss'], label='RMSprop')
+plt.title("Training Loss — Optimizer Comparison")
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# -------------------------------
+# 📈 Compare Validation Accuracy
+# -------------------------------
+plt.figure(figsize=(8,5))
+plt.plot(history_sgd.history['val_accuracy'], label='SGD')
+plt.plot(history_adam.history['val_accuracy'], label='Adam')
+plt.plot(history_rms.history['val_accuracy'], label='RMSprop')
+plt.title("Validation Accuracy — Optimizer Comparison")
+plt.xlabel("Epoch")
+plt.ylabel("Accuracy")
+plt.legend()
+plt.grid(True)
+plt.show()
+
