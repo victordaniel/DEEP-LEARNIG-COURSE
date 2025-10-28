@@ -1,0 +1,127 @@
+#cifar_mlp
+from keras.models import Sequential
+from keras.layers import Dense, Flatten
+from keras.utils import to_categorical
+from keras.datasets import cifar10
+import matplotlib.pyplot as plt
+from keras.optimizers import Adam
+
+#load data
+(x_train,y_train),(x_test,y_test) = cifar10.load_data()
+
+#pre-processing
+y_train = to_categorical(y_train)
+y_test = to_categorical(y_test)
+
+#build the architecture
+model = Sequential()
+model.add(Flatten(input_shape=(32,32,3)))
+model.add(Dense(units=1024,activation='relu'))
+model.add(Dense(units=512,activation='relu'))
+model.add(Dense(units=256,activation='relu'))
+model.add(Dense(units=128,activation='relu'))
+model.add(Dense(units=64,activation='relu'))
+model.add(Dense(units=10,activation='softmax'))
+
+#compile
+model.compile(optimizer='adam',loss= 'categorical_crossentropy',metrics=['accuracy'])
+
+#train
+#history = model.fit(x_train,y_train,epochs=10,batch_size=64)
+#history = model.fit(x_train,y_train,epochs=10,batch_size=64, validation_split = 0.2)
+#history = model.fit(x_train,y_train,epochs=30,batch_size=64, validation_data = (x_test,y_test))
+history = model.fit(x_train,y_train,epochs=100,batch_size=64, validation_data = (x_test,y_test))
+#print(history.history.items())
+#print(history.history.keys())
+
+#evaluate
+loss, accuracy = model.evaluate(x_test,y_test)
+print(f"accuracy: {accuracy},loss: {loss}")
+
+#visualization
+plt.plot(history.history['accuracy'],label="train accuracy",color='blue')
+plt.plot(history.history['val_accuracy'],label="validation accuracy",color='red')
+plt.legend()
+plt.title("Epoch vs Accuarcy on train and test data")
+plt.show()
+
+plt.plot(history.history['loss'],label="train loss",color='blue')
+plt.plot(history.history['val_loss'],label="validation loss",color='red')
+plt.legend()
+plt.title("Epoch vs Loss on train and test data")
+plt.show()
+
+
+
+# 🎯 CIFAR-10 MLP Activation & Depth Experiment 
+# Praise Jesus! 🙌
+
+from keras.models import Sequential
+from keras.layers import Dense, Flatten
+from keras.utils import to_categorical
+from keras.datasets import cifar10
+from keras.optimizers import Adam
+import matplotlib.pyplot as plt
+
+# Load and preprocess CIFAR-10
+(x_train, y_train), (x_test, y_test) = cifar10.load_data()
+x_train = x_train.astype('float32') / 255.0
+x_test = x_test.astype('float32') / 255.0
+y_train = to_categorical(y_train)
+y_test = to_categorical(y_test)
+
+# -------------------------------
+# 🔹 Model 1: 1 Hidden Layer, ReLU
+# -------------------------------
+model_relu = Sequential([
+    Flatten(input_shape=(32, 32, 3)),
+    Dense(512, activation='relu'),
+    Dense(10, activation='softmax')
+])
+
+model_relu.compile(optimizer=Adam(0.001), loss='categorical_crossentropy', metrics=['accuracy'])
+history_relu = model_relu.fit(x_train, y_train, epochs=10, batch_size=128, validation_data=(x_test, y_test))
+
+# -------------------------------
+# 🔹 Model 2: 3 Hidden Layers, Tanh
+# -------------------------------
+model_tanh = Sequential([
+    Flatten(input_shape=(32, 32, 3)),
+    Dense(1024, activation='tanh'),
+    Dense(512, activation='tanh'),
+    Dense(128, activation='tanh'),
+    Dense(10, activation='softmax')
+])
+
+model_tanh.compile(optimizer=Adam(0.001), loss='categorical_crossentropy', metrics=['accuracy'])
+history_tanh = model_tanh.fit(x_train, y_train, epochs=10, batch_size=128, validation_data=(x_test, y_test))
+
+# -------------------------------
+# 🔹 Model 3: 5 Hidden Layers, Sigmoid
+# -------------------------------
+model_sig = Sequential([
+    Flatten(input_shape=(32, 32, 3)),
+    Dense(1024, activation='sigmoid'),
+    Dense(512, activation='sigmoid'),
+    Dense(256, activation='sigmoid'),
+    Dense(128, activation='sigmoid'),
+    Dense(64, activation='sigmoid'),
+    Dense(10, activation='softmax')
+])
+
+model_sig.compile(optimizer=Adam(0.001), loss='categorical_crossentropy', metrics=['accuracy'])
+history_sig = model_sig.fit(x_train, y_train, epochs=10, batch_size=128, validation_data=(x_test, y_test))
+
+# -------------------------------
+# 📊 Compare Validation Accuracy
+# -------------------------------
+plt.figure(figsize=(8,5))
+plt.plot(history_relu.history['val_accuracy'], label='ReLU (1 layer)')
+plt.plot(history_tanh.history['val_accuracy'], label='Tanh (3 layers)')
+plt.plot(history_sig.history['val_accuracy'], label='Sigmoid (5 layers)')
+plt.title("Validation Accuracy Comparison")
+plt.xlabel("Epoch")
+plt.ylabel("Validation Accuracy")
+plt.legend()
+plt.grid(True)
+plt.show()
